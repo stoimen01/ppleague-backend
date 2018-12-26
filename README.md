@@ -1,6 +1,6 @@
 # ppleague-backend
 
-Ping-pong league backend implementation written on top of Node.js.
+Ping-pong league backend implementation written on top of Node.js (plus Express).
 
 API description:
 
