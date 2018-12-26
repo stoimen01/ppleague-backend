@@ -9,31 +9,29 @@ app.use(express.urlencoded({ extended: false }));
 
 const BAD_REQUEST = 400;
 
-const players = {
-    "123": {
-        id: "123",
-        name: "Josh",
-        wins: 10,
-        losses: 10
-    },
-    "1234": {
-        id: "1234",
-        name: "Bob",
-        wins: 10,
-        losses: 10
-    }
-};
+/* Sample player object:
+{
+    id: "123",
+    name: "Josh",
+    wins: 10,
+    losses: 10
+}
+* */
 
-const games = {
-    "101010": {
-        id: "wow",
-        timestamp: 10,
-        player1Id: "123",
-        player1Score: 10,
-        player2Id: "1234",
-        player2Score: 2
-    }
-};
+/* Sample game object:
+{
+    id: "123",
+    timestamp: 10,
+    player1Id: "123",
+    player1Score: 10,
+    player2Id: "1234",
+    player2Score: 2
+}
+* */
+
+// players and games are kept in a dictionary object where each property is a ID to the object
+const players = {};
+const games = {};
 
 const router = express.Router();
 router.get("/data", (req, res) => res.json({
@@ -44,8 +42,15 @@ router.get("/data", (req, res) => res.json({
 router.post("/addPlayer", (req, res) => {
     const { name } = req.body;
 
-
+    // each player must have unique name
     if (!name || Object.values(players).find((player) => player.name === name)) {
+        res.sendStatus(BAD_REQUEST);
+        return;
+    }
+
+    // and must have at least 2 characters
+    const trimmed = name.trim();
+    if (trimmed.length < 2) {
         res.sendStatus(BAD_REQUEST);
         return;
     }
@@ -64,6 +69,7 @@ router.post("/addPlayer", (req, res) => {
 router.post("/addGame", (req, res) => {
     const { player1Id, player1Score, player2Id, player2Score } = req.body;
 
+    // proceed only if everything is available
     if (!(player1Id && player1Score && player2Id && player2Score)) {
         res.sendStatus(BAD_REQUEST);
         return;
@@ -77,6 +83,7 @@ router.post("/addGame", (req, res) => {
         return;
     }
 
+    // scores must not be equal
     if (player1Score === player2Score) {
         res.sendStatus(BAD_REQUEST);
         return;
@@ -98,7 +105,42 @@ router.post("/addGame", (req, res) => {
     };
 
     games[newGame.id] = newGame;
+
+    // responding with the added game and the affected players
     res.json({newGame, player1, player2})
+});
+
+router.post("/removeGame", (req, res) => {
+    const { gameId } = req.body;
+
+    if (!gameId) {
+        res.sendStatus(BAD_REQUEST);
+        return
+    }
+
+    const game = games[gameId];
+    if (!game) {
+        res.sendStatus(BAD_REQUEST);
+        return
+    }
+
+    // reverting players wins and losses
+    const player1 = players[game.player1Id];
+    const player2 = players[game.player2Id];
+
+    if (game.player1Score > game.player2Score) {
+        player1.wins -= 1;
+        player2.losses -= 1;
+    } else {
+        player2.wins -= 1;
+        player1.losses -= 1;
+    }
+
+    // removing th game
+    delete games[gameId];
+
+    // responding with the removed game id and the affected players
+    res.json({ gameId, player1, player2 });
 });
 
 app.use('/', router);
