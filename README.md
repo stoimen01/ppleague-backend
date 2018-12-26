@@ -5,19 +5,19 @@ Ping-pong league backend implementation written on top of Node.js.
 API description:
 
 (GET) /data -  
-returns JSON object containing the available players and games.
+responds JSON object containing the available players and games.
 
 (POST) /addPlayer -  
 accepts JSON with the name of the player to be added  
-and responds with the JSON representing the added player.
+responds with the JSON representing the added player.
 
 (POST) /addGame -  
 accepts JSON with player1Id, player1Score, player2Id, player2Score  
-and responds with JSON containing the new game and the affected players
+responds with JSON containing the new game and the affected players
 
 (POST) /removeGame -  
 accepts JSON with gameId  
-and responds with JSON containing the same gameId and the affected players
+responds with JSON containing the same gameId and the affected players
 
 Additional libraries used :  
 uuid - for generating unique ID's;
